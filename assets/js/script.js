@@ -1,6 +1,5 @@
 let recentSearches = [];
 let oldSearchEl = document.querySelector("#recentSearches");
-let apiKey = "&appid=312bd3bcab3e029ce9a7fadd43d5e2e5";
 let apiForcast = "https://api.openweathermap.org/data/2.5/onecall?";
 let apiCurrent = "https://api.openweathermap.org/data/2.5/weather?q=";
 let daysAmount = "&cnt=5";
@@ -51,6 +50,7 @@ let loadRecentSearches = function () {
 }
 
 let getGeoLocation = function (city) {
+    let apiKey = "&appid=312bd3bcab3e029ce9a7fadd43d5e2e5";
     let cityName = city;
     $("#input-city").val("");
     clearForcast();
@@ -68,6 +68,7 @@ let getGeoLocation = function (city) {
 };
 
 let forcast = function (city, coordinates) {
+  let apiKey = "&appid=312bd3bcab3e029ce9a7fadd43d5e2e5";
   fetch(
     apiForcast +
       "lat=" +
