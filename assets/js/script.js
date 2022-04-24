@@ -1,10 +1,15 @@
+// array to store recent searches
 let recentSearches = [];
+
+// Setting variables
 let oldSearchEl = document.querySelector("#recentSearches");
 let apiForcast = "https://api.openweathermap.org/data/2.5/onecall?";
 let apiCurrent = "https://api.openweathermap.org/data/2.5/weather?q=";
 let daysAmount = "&cnt=5";
 let unitTemp = "&units=imperial";
 
+
+// save recent searches to local storage
 let saveSearch = function (city) {
     if (!recentSearches.includes(city)) {
         recentSearches.push(city);
@@ -14,6 +19,7 @@ let saveSearch = function (city) {
     
 }
 
+// if user uses recent searches, display forcast
 let buttonClickHandler = function (event) {
     var city = event.target.getAttribute("search");
 
@@ -24,6 +30,7 @@ let buttonClickHandler = function (event) {
     };
 };
 
+// Function display recent searches buttons
 let setRecentSearches = function () {
     $("#recentSearches").empty();
     for (let i = recentSearches.length-1; i >= 0; i--) {
@@ -38,6 +45,7 @@ let setRecentSearches = function () {
     }
 };
 
+// function to load recent searches from local storage
 let loadRecentSearches = function () {
     
     recentSearches = JSON.parse(localStorage.getItem("recentSearches"));
@@ -49,24 +57,28 @@ let loadRecentSearches = function () {
 
 }
 
+// function to get geo location after user types in city
 let getGeoLocation = function (city) {
     let apiKey = "&appid=312bd3bcab3e029ce9a7fadd43d5e2e5";
     let cityName = city;
     $("#input-city").val("");
     clearForcast();
     
+    
   fetch(apiCurrent + city + apiKey).then(function (response) {
     if (response.ok) {
       response.json().then(function (data) {
         forcast(city, data.coord);
         saveSearch(cityName);
+        loadRecentSearches();
       });
     } else {
-      throw new Error("Request failed, status: " + response.statusText);
+      alert("City not found, please try again");
     }
   });
 };
 
+// function to get forcast with coordinates
 let forcast = function (city, coordinates) {
   let apiKey = "&appid=312bd3bcab3e029ce9a7fadd43d5e2e5";
   fetch(
@@ -90,12 +102,13 @@ let forcast = function (city, coordinates) {
   });
 };
 
+// function to clear past forcast after showing data
 let clearForcast = function () {
     $("#today").remove();
     loadRecentSearches();
 };
 
-
+// function to display forcast
 let displayForcast = function (city, data) {
     // Creating Today's Forcast elements
     let todayDate = moment.utc(data.current.dt*1000).format("MM/DD/YYYY");
@@ -120,13 +133,16 @@ let displayForcast = function (city, data) {
         .text("UV Index: ");
     let uvIndex = $("<span>").addClass("tag")
         .text(data.current.uvi);
+
+    // highlight UV index depending on value
     if (data.current.uvi <= 2) {
         uvIndex.addClass("is-success");
-    } else if (data.current.uvi <= 4) {
+    } else if (data.current.uvi < 6) {
         uvIndex.addClass("is-warning");
-    } else {
+    } else if (data.current.uvi >= 6) {
         uvIndex.addClass("is-danger");
     };
+    
     let iconEl = $("<span>").addClass("icon is-large");
     let tfIcon = $("<img>")
         .attr("src", "http://openweathermap.org/img/wn/" + data.current.weather[0].icon + "@2x.png");
@@ -136,7 +152,7 @@ let displayForcast = function (city, data) {
     todayForcastDiv.append(cityEl, tfTemp, tfWind, tfHumidity, tfUV);
     $("#forecast").append(todayForcastDiv);
    
-
+    // Creating 5 day forcast elements
     let forcastEl = $("<article>")
     .addClass("level tile is-ancestor");
 
@@ -146,7 +162,7 @@ let displayForcast = function (city, data) {
 
     $("#today").append(forecastTitle);
 
-    // Creating Forcast elements
+    // Creating Forcast elements to display
     for (let i = 1; i < 6; i++) {
         let forcastDate = moment.utc(data.daily[i].dt*1000).format("MM/DD/YYYY");
         let forcastDiv = $("<div>")
@@ -180,12 +196,15 @@ let displayForcast = function (city, data) {
     
 };
 
+// Start by loading recent searches
 loadRecentSearches();
 
+// Event listener for search button
 $("#search-btn").on("click", function () {
   let city = $("#input-city").val();
   getGeoLocation(city);
 });
 
+// Event listener for recent searches buttons
 oldSearchEl.addEventListener("click", buttonClickHandler);
 
